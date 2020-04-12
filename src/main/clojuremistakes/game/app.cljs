@@ -10,7 +10,7 @@
 (defonce default-circle {:x (/ width 2)
                          :y (/ height 2)
                          :radius 10
-                         :borderWidth 1
+                         :borderWidth 10
                          :borderColor 0xff0000
                          :borderAlpha 1
                          :backgroundColor 0xff0000})
@@ -61,7 +61,11 @@
   (str "0x" (.toString (rand-int 255)  16) (.toString  (rand-int 255) 16) (.toString  (rand-int 255) 16)))
 
 (defn add-circle []
-  (swap! state assoc :circles (conj (:circles @state) {:x (rand-int width) :y (rand-int height) :backgroundColor (random-color)})))
+  (swap! state assoc :circles (conj (:circles @state) {:x (rand-int width)
+                                                       :y (rand-int height)
+                                                       :backgroundColor (random-color)
+                                                       :borderColor (random-color)
+                                                       :borderWidth 5})))
 
 (defn init []
   (let [{:keys [graphics

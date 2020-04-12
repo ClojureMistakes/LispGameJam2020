@@ -5,12 +5,12 @@
         result  (assoc circle
                        :radius (cond
                                  (<= 5 (mod elapsed-time-in-seconds 10))
-                                 (- radius (/ delta 10)  )
+                                 (- radius (/ delta 10))
                                  :else
                                  (+ (/ delta 10)  radius))
                        :borderWidth (cond
-                                      (>= 5 (mod elapsed-time-in-seconds 10))  (+ (/ delta 30)  borderWidth))
-                       :else (+ (/ delta 30)  borderWidth))]
+                                      (<= 5 (mod elapsed-time-in-seconds 10))  (+ (/ delta 50)  borderWidth)
+                                      :else (- borderWidth (/ delta 50))))]
     #_(println (str "resize: " result))
     result))
 
