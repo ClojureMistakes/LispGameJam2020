@@ -24,10 +24,11 @@
                         :total-elapsed-time 0
                         :fps-text (pixi/Text. "")
                         :delta 0
-                        :c {:x (/ width 2)
-                            :y (/ height 2)
-                            :radius 10
-                            :backgroundColor 0x87ceeb}})))
+                        ; vector of circles, initialized with one circ in the center
+                        :circles [{:x (/ width 2)
+                                   :y (/ height 2)
+                                   :radius 10
+                                   :backgroundColor 0x87ceeb}]})))
 
 (def init-fps
   (let [app  (:app @state)
@@ -51,9 +52,16 @@
   (set! (.-text (:fps-text @state)) (.-FPS (.-shared pixi/Ticker))))
 
 (defn render-game [delta]
-  (draw-circle (:c @state))
+  (doseq [circle (:circles @state)]
+    (draw-circle circle))
   (draw-fps)
   #_(println (str "Drawing circle at " (:x @my-persistent-circle) "," (:y @my-persistent-circle))))
+
+(defn random-color []
+  (str "0x" (.toString (rand-int 255)  16) (.toString  (rand-int 255) 16) (.toString  (rand-int 255) 16)))
+
+(defn add-circle []
+  (swap! state assoc :circles (conj (:circles @state) {:x (rand-int width) :y (rand-int height) :backgroundColor (random-color)})))
 
 (defn init []
   (let [{:keys [graphics
@@ -62,6 +70,7 @@
     (println "Adding shared grapics object to PIXI.Stage")
     (.addChild (.-stage app) graphics)
     (println "Initializing game loop")
+    (doseq [n (range 10)] (add-circle))
     (init-game-loop
      (fn [delta]
        (swap! state assoc :delta delta)
@@ -69,10 +78,10 @@
        (swap! state (fn [curr-state]
                       (let [state curr-state
                             total (:total-elapsed-time state)
-                            circle (:c state)
-                            circle (circle/move state circle)
-                            circle (circle/resize state circle)]
-                        (assoc state :c circle :total-elapsed-time (+ delta total)))))
+                            circles (:circles state)
+                            circles (map (fn [circle] (circle/move state circle)) circles)
+                            circles (map (fn [circle] (circle/resize state circle)) circles)]
+                        (assoc state :circles circles :total-elapsed-time (+ delta total)))))
        (render-game delta)))))
 
 
@@ -82,30 +91,27 @@
                  [:circle {}
                   :circle {}]])
   ;; => #'clojuremistakes.game.app/entities
-  
+
 
   (defn render-container [container & rest]
     ;check e pool for id, otherwise create new pixi container
     ;for each the rest and add them to container
     ;
     )
-  
+
   (defn render-tree [tree]
     (let [el (first tree)
           props (second tree)
           r (drop 1 (rest tree))]
       (case el
         :container (do (render-container props r))
-        :circle
-        )
-      
-      ))
+        :circle)))
   ;; => #'clojuremistakes.game.app/render-tree
-  
+
   ;; => #'clojuremistakes.game.app/render-tree
-  
+
   (render-tree entities)
   ;; => nil
-  
+
   ;; => nil
   )
