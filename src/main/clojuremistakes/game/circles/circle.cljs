@@ -1,4 +1,4 @@
-(ns clojuremistakes.game.circle)
+(ns clojuremistakes.game.circles.circle)
 
 (defn resize [{:keys [delta total-elapsed-time]} {:keys [radius borderWidth] :as circle}]
   (let [elapsed-time-in-seconds (Math/round (/ total-elapsed-time 100))

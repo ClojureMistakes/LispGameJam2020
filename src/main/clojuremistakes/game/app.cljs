@@ -1,7 +1,6 @@
 (ns clojuremistakes.game.app
   (:require
-   [clojuremistakes.game.circle :as circle]
-   [clojuremistakes.game.circles.example :as circles-demo]
+   [clojuremistakes.game.circles.game :as circles-demo]
    [clojuremistakes.game.pixi :as pixi-utils]
    ["pixi.js" :as pixi]))
 
