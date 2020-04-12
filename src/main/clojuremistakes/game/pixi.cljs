@@ -6,7 +6,8 @@
                           :height height
                           :view canvas
                           :antialias true
-                          :sharedTicker true}))
+                          :sharedTicker true
+                          :transparent true}))
 
 (defn create-container [app]
   (let [container (pixi/Container.)]

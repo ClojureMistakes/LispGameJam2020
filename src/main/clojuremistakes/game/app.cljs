@@ -22,7 +22,15 @@
                         :canvas canvas
                         :app app
                         :container (pixi-utils/create-container app)
-                        :total-elapsed-time 0})))
+                        :total-elapsed-time 0
+                        :fps-text (pixi/Text. "")})))
+
+(def init-fps
+  (let [app  (:app @state)
+        fps  (:fps-text @state)]
+    (set! (.-x fps) 0)
+    (set! (.-y fps) 0)
+    (.addChild (.-stage app) fps)))
 
 (defn draw-circle [circle]
   (let [{:keys [x
@@ -39,19 +47,18 @@
     (.drawCircle graphics x y radius)
     (.endFill graphics)))
 
-; (defn game-loop [game]
-;   (let []
-;     (js/requestAnimationFrame
-;      (fn [ts]
-;        (let [ts (* ts 0.001)]
-;          (.clear (:graphics @state))
-;          (draw-circle {:radius (* 3 ts) :x (* 2 ts) :y (* 2 ts) :backgroundColor (.toString (:total-time game) 16)})
-;          (game-loop (assoc game
-;                            :delta-time (- ts (:total-time game))
-;                            :total-time ts)))))))
+#_(defn game-loop [game]
+    (let []
+      (js/requestAnimationFrame
+       (fn [ts]
+         (let [ts (* ts 0.001)]
+           (.clear (:graphics @state))
+           (draw-circle {:radius (* 3 ts) :x (* 2 ts) :y (* 2 ts) :backgroundColor (.toString (:total-time game) 16)})
+           (game-loop (assoc game
+                             :delta-time (- ts (:total-time game))
+                             :total-time ts)))))))
 
 (defn init-game-loop [on-tick]
-  (println (:app @state))
   (.add (.-ticker (:app @state)) on-tick))
 
 (defonce my-persistent-circle (atom {:x (/ width 2)
@@ -62,7 +69,6 @@
 (defn move-circle [delta]
   (let [{:keys [total-elapsed-time]} @state
         elapsed-time-in-seconds (Math/round (/ total-elapsed-time 100))]
-    (println elapsed-time-in-seconds)
     (swap! my-persistent-circle assoc
            :radius (cond
                      (= 0 (mod elapsed-time-in-seconds 7)) (:radius default-circle)
@@ -81,10 +87,13 @@
                 (= 0 (mod elapsed-time-in-seconds 3)) (+ (* 3 (rand-int delta)) (:y @my-persistent-circle))
                 :else (- (:y @my-persistent-circle) delta)))))
 
+(defn draw-fps []
+  (set! (.-text (:fps-text @state)) (.-FPS (.-shared pixi/Ticker))))
+
 (defn render-game [delta]
   (draw-circle @my-persistent-circle)
-;   (println (str "Drawing circle at " (:x @my-persistent-circle) "," (:y @my-persistent-circle)))
-  )
+  (draw-fps)
+  #_(println (str "Drawing circle at " (:x @my-persistent-circle) "," (:y @my-persistent-circle))))
 
 (defn init []
   (let [{:keys [graphics
