@@ -4,7 +4,9 @@
 (defn pixi-application [width height canvas]
   (pixi/Application. #js {:width width
                           :height height
-                          :view canvas}))
+                          :view canvas
+                          :antialias true
+                          :sharedTicker true}))
 
 (defn create-container [app]
   (let [container (pixi/Container.)]
