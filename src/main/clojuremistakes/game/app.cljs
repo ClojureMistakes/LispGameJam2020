@@ -8,9 +8,9 @@
 (def width 800)
 (def height 600)
 (def hex-color-max 16777216)
-(defonce default-circle {:x 50
-                         :y 50
-                         :radius 100
+(defonce default-circle {:x (/ width 2)
+                         :y (/ height 2)
+                         :radius 10
                          :borderWidth 1
                          :borderColor 0xff0000
                          :borderAlpha 1
@@ -21,7 +21,8 @@
                        {:graphics (pixi/Graphics.)
                         :canvas canvas
                         :app app
-                        :container (pixi-utils/create-container app)})))
+                        :container (pixi-utils/create-container app)
+                        :total-elapsed-time 0})))
 
 (defn draw-circle [circle]
   (let [{:keys [x
@@ -53,16 +54,37 @@
   (println (:app @state))
   (.add (.-ticker (:app @state)) on-tick))
 
-(defonce my-persistent-circle (atom {:x 10 :y 10 :radius 10 :backgroundColor 0x87ceeb}))
+(defonce my-persistent-circle (atom {:x (/ width 2)
+                                     :y (/ height 2)
+                                     :radius 10
+                                     :backgroundColor 0x87ceeb}))
 
 (defn move-circle [delta]
-  (swap! my-persistent-circle assoc
-         :x (+ delta (:x @my-persistent-circle))
-         :y (+ delta (:y @my-persistent-circle))))
+  (let [{:keys [total-elapsed-time]} @state
+        elapsed-time-in-seconds (Math/round (/ total-elapsed-time 100))]
+    (println elapsed-time-in-seconds)
+    (swap! my-persistent-circle assoc
+           :radius (cond
+                     (= 0 (mod elapsed-time-in-seconds 7)) (:radius default-circle)
+                     :else (+ (/ delta 10) (:radius @my-persistent-circle)))
+           :borderWidth (cond
+                          (= 0 (mod elapsed-time-in-seconds 7)) (:borderWidth default-circle)
+                          :else (+ (/ delta 10) (:borderWidth @my-persistent-circle)))
+           :x (cond
+                (= 0 (mod elapsed-time-in-seconds 7)) (:x default-circle)
+                (even? elapsed-time-in-seconds) (+ delta (:x @my-persistent-circle))
+                (= 0 (mod elapsed-time-in-seconds 3)) (+ (* 3 (rand-int delta)) (:x @my-persistent-circle))
+                :else (- (:x @my-persistent-circle) delta))
+           :y (cond
+                (= 0 (mod elapsed-time-in-seconds 7)) (:y default-circle)
+                (odd? elapsed-time-in-seconds) (+ delta (:y @my-persistent-circle))
+                (= 0 (mod elapsed-time-in-seconds 3)) (+ (* 3 (rand-int delta)) (:y @my-persistent-circle))
+                :else (- (:y @my-persistent-circle) delta)))))
 
 (defn render-game [delta]
   (draw-circle @my-persistent-circle)
-  (println (str "Drawing circle at " (:x @my-persistent-circle) "," (:y @my-persistent-circle))))
+;   (println (str "Drawing circle at " (:x @my-persistent-circle) "," (:y @my-persistent-circle)))
+  )
 
 (defn init []
   (let [{:keys [graphics
@@ -75,4 +97,5 @@
      (fn [delta]
        (.clear (:graphics @state))
        (move-circle delta)
-       (render-game delta)))))
+       (render-game delta)
+       (swap! state assoc :total-elapsed-time (+ delta (:total-elapsed-time @state)))))))
