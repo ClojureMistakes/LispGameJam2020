@@ -1,0 +1,14 @@
+{
+  "name": "lisp-game-jam-2020",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "npx shadow-cljs watch frontend"
+  },
+  "devDependencies": {
+    "shadow-cljs": "2.8.94"
+  },
+  "dependencies": {
+    "pixi.js": "^5.2.1"
+  }
+}
