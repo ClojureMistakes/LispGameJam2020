@@ -1,4 +1,4 @@
-(ns clojuremistakes.game.movementdemo.game
+(ns clojuremistakes.game.mousemovementdemo.game
   (:require
    [clojuremistakes.game.input :as input]
    [clojuremistakes.game.pixi :as pixi-utils]
