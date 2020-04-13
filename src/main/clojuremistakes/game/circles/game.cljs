@@ -16,7 +16,11 @@
                          :backgroundColor 0xff0000})
 
 (defonce state (atom (let [canvas (js/document.getElementById "game_canvas")
-                           app (pixi-utils/pixi-application width height canvas)]
+                           app  (pixi/Application. #js {:autoResize true
+                                                        :view canvas
+                                                        :antialias true
+                                                        :sharedTicker true
+                                                        :transparent true})]
                        {:graphics (pixi/Graphics.)
                         :canvas canvas
                         :app app

@@ -1,21 +1,25 @@
 (ns clojuremistakes.game.mousemovementdemo.game
   (:require
    [clojuremistakes.game.input :as input]
-   [clojuremistakes.game.pixi :as pixi-utils]
    ["pixi.js" :as pixi]))
 
-(def width 800)
-(def height 600)
-
 (defonce state (atom (let [canvas (js/document.getElementById "game_canvas")
-                           app (pixi-utils/pixi-application width height canvas)]
-                       {:graphics (pixi/Graphics.)
+                           container (pixi/Container.)
+                           graphics (pixi/Graphics.)
+                           app  (pixi/Application. #js {:autoResize true
+                                                        :view canvas
+                                                        :antialias true
+                                                        :sharedTicker true
+                                                        :backgroundColor 0xffffff})]
+                       (.addChild (.-stage app) container)
+                       (.addChild (.-stage app) graphics)
+                       {:graphics graphics
                         :canvas canvas
                         :app app
-                        :container (pixi-utils/create-container app)
+                        :container container
                         :total-elapsed-time 0
                         :delta 0
-                        :fps-text (pixi/Text. "")
+                        :fps-text (pixi/Text. "" #js {:fill 0xff0000})
                         :pressed-keys #{}
                         :mouse-x 0
                         :mouse-y 0
@@ -26,6 +30,12 @@
                                  :borderColor 0xff0000
                                  :borderAlpha 1
                                  :backgroundColor 0xff0000}})))
+
+(defn get-width []
+  (.-width (.-screen (:app @state))))
+
+(defn get-height []
+  (.-height (.-screen (:app @state))))
 
 (def init-fps
   (let [app  (:app @state)
@@ -46,7 +56,7 @@
     (.endFill graphics)))
 
 (defn draw-fps []
-  (set! (.-text (:fps-text @state)) (.-FPS (.-shared pixi/Ticker))))
+  (set! (.-text (:fps-text @state)) (Math/floor (.-FPS (.-shared pixi/Ticker)))))
 
 (defn render-game [delta]
   (draw-circle (:circle @state))
@@ -55,10 +65,9 @@
 (defn start-game []
   (let [{:keys [graphics canvas app]} @state]
     (println "Starting game...")
-    (println "Adding shared grapics object to PIXI.Stage")
-    (.addChild (.-stage app) graphics)
     (println "Adding Event Listeners")
     (input/listen-for-mouse state canvas)
+    (input/listen-for-resize app)
     (println "Initializing game loop")
     (init-game-loop
      (fn [delta]
