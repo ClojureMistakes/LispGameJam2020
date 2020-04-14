@@ -12,12 +12,13 @@
 
 (def vertexSrc "
 precision mediump float;
-attribute vec3 cells;
+attribute vec2 cells;
 uniform mat3 translationMatrix;
 uniform mat3 projectionMatrix;
 
 void main() {
-    gl_Position = vec4 ((projectionMatrix * translationMatrix * vec3 (cells, 1.0)) .xy, 0.0, 1.0);
+    gl_PointSize = 5.0;
+    gl_Position = vec4 ((projectionMatrix * translationMatrix * vec3 (cells.xy, 1.0)).xy, 0.0, 1.0);
 }
 ")
 
@@ -32,20 +33,45 @@ void main () {
 (defn get-map-cells [rot-map]
   (.-_map rot-map))
 
-(defn create-rot-map []
-  (let [c (new (.-Cellular rot/Map) 10 10)]
+(defn create-cellular-map []
+  (let [c (new (.-Cellular rot/Map) 100 100)]
     (.randomize c 0.5)
     (.create c)
     c))
 
+(defn create-divided-maze-map []
+  (let [c (new (.-DividedMaze rot/Map) 100 100)]
+    c))
+
+(defn create-icey-maze-map []
+  (let [c (new (.-IceyMaze rot/Map) 100 100)]
+    c))
+
+
+; GL point-size is set to 5px currently, so in order to space apart the x/y coords so they don't overlap
+; I multiply the x/y buffers by 5px to space them apart
+(def scale-factor 3)
+
+(defn transform-cell-map-js [cells]
+  (let [buffer #js []]
+    (.create cells
+             (fn [x y wall]
+               (when (= 1 wall)
+                 (.push buffer #js [(* scale-factor x) (* scale-factor y)]))))
+    #_(.log js/console buffer)
+    (.flat buffer)))
+
 ; Converts 2D matrix of 0/1 values to 2D array of [[x,y,life]]
 ; [ [0, 1, 0, 0] ] -> [ [ 0, 0, 0], [1, 0, 1] ...]
 (defn transform-cell-map [cells]
-  (let [cells-as-vec (js->clj (get-map-cells cells))]
-    (for [y (range (count cells-as-vec))
-          x (range (count (first cells-as-vec)))
-          c (flatten cells-as-vec)]
-      [x y c])))
+  (let [cells-as-vec (js->clj (get-map-cells cells))
+        transformed-cells (for [y (range (count cells-as-vec))
+                                x (range (count (first cells-as-vec)))
+                                :when (= 1 (get (get cells-as-vec y) x))]
+
+                            [x y])]
+    (println transformed-cells)
+    (clj->js (flatten transformed-cells))))
 
 ;; (defn stringify-cell-map [cells]
 ;;   (let [cells-as-vec (js->clj (get-map-cells cells))]
@@ -57,24 +83,23 @@ void main () {
 (defn create-mesh [cells]
   (let [geometry (pixi/Geometry.)
         shader (.from pixi/Shader vertexSrc fragmentSrc)
-        cell-transform  (transform-cell-map cells)]
+        cell-transform  (transform-cell-map-js cells)]
     (.addAttribute geometry "cells" cell-transform)
-    (pixi/Mesh. geometry shader)))
+    (pixi/Mesh. geometry shader nil (.-POINTS pixi/DRAW_MODES))))
 
 (defonce state (atom (let [canvas (js/document.getElementById "game_canvas")
                            container (pixi/Container.)
                            graphics (pixi/Graphics.)
-                           map (create-rot-map)
-                           mesh (create-mesh (get-map-cells map))
+                           map (create-divided-maze-map)
+                           mesh (create-mesh map)
                            app  (pixi/Application. #js {:autoResize true
                                                         :view canvas
                                                         :antialias true
                                                         :transparent false
                                                         :sharedTicker true
                                                         :backgroundColor 0x000000})]
-                       (.addChild (.-stage app) container)
-                       (.addChild (.-stage app) graphics)
-                       (.set (.-position mesh) 0 0)
+                    ;;    (.addChild (.-stage app) container)
+                    ;;    (.addChild (.-stage app) graphics)
                        (.addChild (.-stage app) mesh)
                        {:graphics graphics
                         :canvas canvas
@@ -105,10 +130,8 @@ void main () {
   (set! (.-y (.-position (:fps-text @state))) (- (get-height (:app @state)) 40)))
 
 (defn render-game [delta]
-  (draw-fps))
-
-
-
+  (draw-fps)
+  () (.-renderer (:app @state)))
 
 (defn update-map [delta]
   (.create (:map @state)))
@@ -132,13 +155,13 @@ void main () {
 
 (defn start-game []
   (let [{:keys [graphics canvas app]} @state]
-    (input/listen-for-mouse state canvas)
-    (input/listen-for-resize
-     (fn []
-       (handle-resize app)
-       (render-game 0)))
-    (println "Properly resize PIXI Application on start-up")
+    ;; (input/listen-for-mouse state canvas)
+    ;; (input/listen-for-resize
+    ;;  (fn []
+    ;;    (handle-resize app)
+    ;;    (render-game 0)))
+    ;; (println "Properly resize PIXI Application on start-up")
     (handle-resize app)
     ;; (swap! state assoc :map (new (.-Cellular rot/Map)  (get-width app) (get-map-cells app)))
-    (println "Initializing game loop")
+    ;; (println "Initializing game loop")
     (init-game-loop handle-tick)))
