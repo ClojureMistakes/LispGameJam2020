@@ -9,8 +9,9 @@
                            app  (pixi/Application. #js {:autoResize true
                                                         :view canvas
                                                         :antialias true
+                                                        :transparent false
                                                         :sharedTicker true
-                                                        :backgroundColor 0xffffff})]
+                                                        :backgroundColor 0x000000})]
                        (.addChild (.-stage app) container)
                        (.addChild (.-stage app) graphics)
                        {:graphics graphics
@@ -56,18 +57,28 @@
     (.endFill graphics)))
 
 (defn draw-fps []
-  (set! (.-text (:fps-text @state)) (Math/floor (.-FPS (.-shared pixi/Ticker)))))
+  (set! (.-text (:fps-text @state)) (Math/floor (.-FPS (.-shared pixi/Ticker))))
+  (set! (.-x (.-position (:fps-text @state))) (- (get-width) 50))
+  (set! (.-y (.-position (:fps-text @state))) (- (get-height) 40)))
 
 (defn render-game [delta]
   (draw-circle (:circle @state))
   (draw-fps))
+
+(defn handle-resize [app]
+  (.resize (.-renderer app) (.-innerWidth js/window) (.-innerHeight js/window)))
 
 (defn start-game []
   (let [{:keys [graphics canvas app]} @state]
     (println "Starting game...")
     (println "Adding Event Listeners")
     (input/listen-for-mouse state canvas)
-    (input/listen-for-resize app)
+    (input/listen-for-resize
+     (fn []
+       (handle-resize app)
+       (render-game 0)))
+    (println "Properly resize PIXI Application on start-up")
+    (handle-resize app)
     (println "Initializing game loop")
     (init-game-loop
      (fn [delta]

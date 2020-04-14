@@ -38,7 +38,7 @@
       (set! context.canvas.height display-height)))
 
 ; On resize, tell the PIXI Application renderer to resize to the window innerWidth & innerHeight
-(defn listen-for-resize [app]
+(defn listen-for-resize [on-resize]
   (events/listen js/window "resize"
                  (fn [event]
-                   (.resize (.-renderer app) (.-innerWidth js/window) (.-innerHeight js/window)))))
+                   (on-resize))))
