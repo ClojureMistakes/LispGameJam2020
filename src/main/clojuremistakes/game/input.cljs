@@ -12,6 +12,15 @@
                                   y (- (.-clientY event) (.-top bounds))]
                               (assoc state :mouse-x x :mouse-y y)))))))
 
+; On mouse move, update the game state's mouse-x and mouse-y
+(defn listen-for-mousedown [canvas on-mousedown]
+  (events/listen js/window "mousedown"
+                 (fn [event]
+                   (let [bounds (.getBoundingClientRect canvas)
+                         x (- (.-clientX event) (.-left bounds))
+                         y (- (.-clientY event) (.-top bounds))]
+                     (on-mousedown x y)))))
+
 (defn keycode->keyword [keycode]
   (condp = keycode
     8 :backspace
