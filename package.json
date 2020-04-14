@@ -9,7 +9,7 @@
     "shadow-cljs": "2.8.94"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
-    "pixi.js": "^5.2.1"
+    "pixi.js": "^5.1.6",
+    "rot-js": "^2.1.1"
   }
 }
