@@ -1,8 +1,9 @@
 (ns clojuremistakes.game.app
   (:require
-   [clojuremistakes.game.circles.game :as circles-demo]
-   [clojuremistakes.game.mousemovementdemo.game :as movement-demo]
-   [clojuremistakes.game.cellularautomata.game :as cellular-demo]
+   #_[clojuremistakes.game.circles.game :as circles-demo]
+   #_[clojuremistakes.game.mousemovementdemo.game :as movement-demo]
+   #_[clojuremistakes.game.cellularautomata.game :as cellular-demo]
+   [clojuremistakes.game.logic.game :as logic]
    ["pixi.js" :as pixi]))
 
 (defn init []
@@ -10,4 +11,4 @@
     ; Start the circles-demo
     ;(circles-demo/start-game)
     ;(movement-demo/start-game)
-    (cellular-demo/start-game)))
+    (logic/start-game)))
