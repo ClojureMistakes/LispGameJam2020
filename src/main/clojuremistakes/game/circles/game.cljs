@@ -91,35 +91,3 @@
                             circles (map (fn [circle] (circle/resize state circle)) circles)]
                         (assoc state :circles circles :total-elapsed-time (+ delta total)))))
        (render-game delta)))))
-
-
-(comment
-
-  (def entities [:container {:id 1}
-                 [:circle {}
-                  :circle {}]])
-  ;; => #'clojuremistakes.game.app/entities
-
-
-  (defn render-container [container & rest]
-    ;check e pool for id, otherwise create new pixi container
-    ;for each the rest and add them to container
-    ;
-    )
-
-  (defn render-tree [tree]
-    (let [el (first tree)
-          props (second tree)
-          r (drop 1 (rest tree))]
-      (case el
-        :container (do (render-container props r))
-        :circle)))
-  ;; => #'clojuremistakes.game.app/render-tree
-
-  ;; => #'clojuremistakes.game.app/render-tree
-
-  (render-tree entities)
-  ;; => nil
-
-  ;; => nil
-  )
